@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block content %}
+  <section class="hero">
+    <div>
+      <h1>AI-Powered Gym Nutrition Calculator</h1>
+      <p class="fade-up">Smart calorie & protein recommendations, personalized diet plans powered by Google Gemini.</p>
+      <div class="features" id="features">
+        <div class="feature fade-up">
+          <h3>AI Nutrition Engine</h3>
+          <p>Data-driven calorie and macro recommendations with ML-backed insights.</p>
+        </div>
+        <div class="feature fade-up">
+          <h3>Smart Protein Analysis</h3>
+          <p>Optimize protein intake for muscle gain and recovery.</p>
+        </div>
+        <div class="feature fade-up">
+          <h3>Personalized Diet Planning</h3>
+          <p>Gemini-powered Indian diet plans, Kerala options, and affordable meals.</p>
+        </div>
+      </div>
+    </div>
+
+    <aside id="form" class="form-card glass fade-up">
+      <form id="calcForm" method="post" action="/predict">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Age</label>
+            <input type="number" name="age" value="25" min="10" max="100">
+          </div>
+          <div class="form-row">
+            <label>Gender</label>
+            <select name="gender"><option>Male</option><option>Female</option></select>
+          </div>
+          <div class="form-row">
+            <label>Weight (kg)</label>
+            <input type="number" step="0.1" name="weight" value="70">
+          </div>
+          <div class="form-row">
+            <label>Height (cm)</label>
+            <input type="number" step="0.1" name="height" value="170">
+          </div>
+          <div class="form-row">
+            <label>BMI (optional)</label>
+            <input type="text" name="bmi" placeholder="auto-calculated">
+          </div>
+          <div class="form-row">
+            <label>Workout Frequency (days/week)</label>
+            <input type="number" name="workout_freq" value="3">
+          </div>
+          <div class="form-row">
+            <label>Workout Type</label>
+            <select name="workout_type"><option>Strength</option><option>Cardio</option><option>Mixed</option></select>
+          </div>
+          <div class="form-row">
+            <label>Experience Level</label>
+            <select name="experience"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select>
+          </div>
+          <div class="form-row">
+            <label>Session Duration (mins)</label>
+            <input type="number" name="session_duration" value="60">
+          </div>
+          <div class="form-row">
+            <label>Water Intake (L/day)</label>
+            <input type="number" step="0.1" name="water_intake" value="2.5">
+          </div>
+          <div class="form-row">
+            <label>Fat Percentage (%)</label>
+            <input type="number" step="0.1" name="fat_percentage" value="20">
+          </div>
+          <div class="form-row">
+            <label>Physical Exercise</label>
+            <select name="physical_exercise"><option>Sedentary</option><option>Light</option><option selected>Moderate</option><option>Heavy</option><option>Athlete</option></select>
+          </div>
+          <div class="form-row">
+            <label>Goal</label>
+            <select name="goal"><option>Weight Loss</option><option selected>Maintenance</option><option>Muscle Gain</option></select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="cta">Calculate</button>
+        </div>
+      </form>
+    </aside>
+  </section>
+
+  <section id="about" style="padding:40px 64px" class="fade-up">
+    <div class="glass">
+      <h3>About</h3>
+      <p>Premium AI-driven nutrition recommendations with modern futuristic UI.</p>
+    </div>
+  </section>
+{% endblock %}

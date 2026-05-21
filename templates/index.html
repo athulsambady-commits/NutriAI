@@ -1,0 +1,282 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">
+                AI-Powered Gym Nutrition Calculator
+            </h1>
+            <p class="hero-subtitle">
+                Get personalized daily nutrition recommendations powered by machine learning and Google Gemini AI
+            </p>
+            <a href="#form-section" class="cta-button">
+                Get Your Plan
+                <i data-lucide="arrow-right" class="button-icon"></i>
+            </a>
+        </div>
+        <div class="hero-visual">
+            <div class="floating-card card-1">
+                <div class="card-content">
+                    <i data-lucide="flame" class="card-icon"></i>
+                    <span>2500 kcal</span>
+                </div>
+            </div>
+            <div class="floating-card card-2">
+                <div class="card-content">
+                    <i data-lucide="heart" class="card-icon"></i>
+                    <span>150g Protein</span>
+                </div>
+            </div>
+            <div class="floating-card card-3">
+                <div class="card-content">
+                    <i data-lucide="droplets" class="card-icon"></i>
+                    <span>3L Water</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features">
+    <div class="section-header">
+        <h2>Why NutriAI?</h2>
+        <p>Premium features designed for fitness enthusiasts</p>
+    </div>
+
+    <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card" data-index="0">
+            <div class="feature-icon-box">
+                <i data-lucide="brain" class="feature-icon"></i>
+            </div>
+            <h3>AI Nutrition Engine</h3>
+            <p>Advanced machine learning models predict your exact calorie and protein requirements based on your fitness profile</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card" data-index="1">
+            <div class="feature-icon-box">
+                <i data-lucide="apple" class="feature-icon"></i>
+            </div>
+            <h3>Smart Protein Analysis</h3>
+            <p>Get personalized protein recommendations optimized for your fitness goal and workout intensity</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card" data-index="2">
+            <div class="feature-icon-box">
+                <i data-lucide="dumbbell" class="feature-icon"></i>
+            </div>
+            <h3>Personalized Diet Planning</h3>
+            <p>Gemini AI generates detailed daily meal plans with Indian cuisine options, meal timings, and macro breakdowns</p>
+        </div>
+    </div>
+</section>
+
+<!-- Form Section -->
+<section id="form-section" class="form-section">
+    <div class="form-container">
+        <div class="form-header">
+            <h2>Your Fitness Profile</h2>
+            <p>Provide your details for personalized nutrition recommendations</p>
+        </div>
+
+        <form id="nutritionForm" class="nutrition-form">
+            <!-- Row 1: Age, Gender -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="age">Age (years)</label>
+                    <input type="number" id="age" name="age" min="18" max="100" value="25" required>
+                    <span class="input-hint">18-100 years</span>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" required>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Row 2: Weight, Height -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="weight">Weight (kg)</label>
+                    <input type="number" id="weight" name="weight" min="30" max="200" step="0.1" value="75" required>
+                    <span class="input-hint">30-200 kg</span>
+                </div>
+                <div class="form-group">
+                    <label for="height">Height (cm)</label>
+                    <input type="number" id="height" name="height" min="120" max="250" step="0.1" value="175" required>
+                    <span class="input-hint">120-250 cm</span>
+                </div>
+            </div>
+
+            <!-- Row 3: Workout Frequency, Workout Type -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="workout_frequency">Workout Frequency (days/week)</label>
+                    <input type="number" id="workout_frequency" name="workout_frequency" min="1" max="7" value="4" required>
+                </div>
+                <div class="form-group">
+                    <label for="workout_type">Workout Type</label>
+                    <select id="workout_type" name="workout_type" required>
+                        <option value="Cardio">Cardio</option>
+                        <option value="Strength">Strength</option>
+                        <option value="Mixed" selected>Mixed</option>
+                        <option value="Flexibility">Flexibility</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Row 4: Experience Level, Session Duration -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="experience_level">Experience Level</label>
+                    <select id="experience_level" name="experience_level" required>
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate" selected>Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="session_duration">Session Duration (minutes)</label>
+                    <input type="number" id="session_duration" name="session_duration" min="30" max="180" value="60" required>
+                </div>
+            </div>
+
+            <!-- Row 5: Water Intake, Fat Percentage -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="water_intake">Daily Water Intake (liters)</label>
+                    <input type="number" id="water_intake" name="water_intake" min="1" max="5" step="0.5" value="2.5" required>
+                </div>
+                <div class="form-group">
+                    <label for="fat_percentage">Body Fat Percentage</label>
+                    <input type="number" id="fat_percentage" name="fat_percentage" min="5" max="50" step="0.5" value="20" required>
+                </div>
+            </div>
+
+            <!-- Row 6: Physical Exercise, Goal -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="physical_exercise">Physical Exercise Level</label>
+                    <select id="physical_exercise" name="physical_exercise" required>
+                        <option value="0">None</option>
+                        <option value="1" selected>Light</option>
+                        <option value="2">Moderate</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="goal">Fitness Goal</label>
+                    <select id="goal" name="goal" required>
+                        <option value="Weight Loss">Weight Loss</option>
+                        <option value="Maintenance" selected>Maintenance</option>
+                        <option value="Muscle Gain">Muscle Gain</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-submit">
+                <button type="submit" class="submit-button">
+                    <span class="button-text">Generate AI Diet Plan</span>
+                    <i data-lucide="zap" class="button-icon"></i>
+                </button>
+            </div>
+        </form>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+            <div class="spinner"></div>
+            <p>Generating your personalized nutrition plan...</p>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="about">
+    <div class="about-content">
+        <div class="about-text">
+            <h2>About NutriAI</h2>
+            <p>NutriAI is a production-ready AI-powered nutrition recommendation platform designed for fitness enthusiasts. Our system combines:</p>
+            <ul class="about-list">
+                <li><strong>Machine Learning:</strong> RandomForestRegressor models trained on fitness data</li>
+                <li><strong>AI Integration:</strong> Google Gemini API for personalized diet planning</li>
+                <li><strong>Scientific Formulas:</strong> Harris-Benedict equations for accurate calorie calculations</li>
+                <li><strong>Indian Cuisine Focus:</strong> Practical meal plans with local food options</li>
+            </ul>
+        </div>
+        <div class="about-tech">
+            <h3>Technology Stack</h3>
+            <div class="tech-stack">
+                <span class="tech-badge">Flask</span>
+                <span class="tech-badge">Python</span>
+                <span class="tech-badge">Scikit-learn</span>
+                <span class="tech-badge">Google Gemini</span>
+                <span class="tech-badge">HTML5/CSS3</span>
+                <span class="tech-badge">JavaScript</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Redirect to results on success -->
+<script>
+document.getElementById('nutritionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Show loading spinner
+    document.getElementById('loadingSpinner').style.display = 'flex';
+    document.getElementById('nutritionForm').style.display = 'none';
+    
+    try {
+        // Get form data
+        const formData = new FormData(document.getElementById('nutritionForm'));
+        const data = Object.fromEntries(formData);
+        
+        // Submit to backend
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            // Store results in session storage
+            sessionStorage.setItem('predictions', JSON.stringify(result));
+            // Redirect to results page
+            window.location.href = '/results';
+        } else {
+            alert('Error: ' + (result.error || 'Failed to generate recommendations'));
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('nutritionForm').style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+        document.getElementById('loadingSpinner').style.display = 'none';
+        document.getElementById('nutritionForm').style.display = 'block';
+    }
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
+</script>
+
+{% endblock %}

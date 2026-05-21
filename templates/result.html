@@ -1,0 +1,395 @@
+{% extends "layout.html" %}
+
+{% block title %}Your Nutrition Plan - AI Gym Nutrition Calculator{% endblock %}
+
+{% block content %}
+<section class="results-section">
+    <div class="results-container">
+        <!-- Header -->
+        <div class="results-header">
+            <h1>Your Personalized Nutrition Plan</h1>
+            <p>Based on your fitness profile and AI analysis</p>
+        </div>
+
+        <!-- Key Metrics Dashboard -->
+        <div class="metrics-dashboard">
+            <!-- Calories Card -->
+            <div class="metric-card large-card">
+                <div class="metric-icon calories-icon">
+                    <i data-lucide="flame"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>Daily Calories</h3>
+                    <div class="metric-value">
+                        <span id="caloriesValue">2400</span>
+                        <span class="metric-unit">kcal</span>
+                    </div>
+                    <p class="metric-note">Target for your goal</p>
+                </div>
+            </div>
+
+            <!-- Protein Card -->
+            <div class="metric-card large-card">
+                <div class="metric-icon protein-icon">
+                    <i data-lucide="heart"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>Daily Protein</h3>
+                    <div class="metric-value">
+                        <span id="proteinValue">150</span>
+                        <span class="metric-unit">g</span>
+                    </div>
+                    <p class="metric-note">High protein for gains</p>
+                </div>
+            </div>
+
+            <!-- BMI Card -->
+            <div class="metric-card">
+                <div class="metric-icon bmi-icon">
+                    <i data-lucide="activity"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>Your BMI</h3>
+                    <div class="metric-value">
+                        <span id="bmiValue">24.5</span>
+                    </div>
+                    <p class="metric-note" id="bmiCategory">Normal Weight</p>
+                </div>
+            </div>
+
+            <!-- Goal Card -->
+            <div class="metric-card goal-card">
+                <div class="metric-icon goal-icon">
+                    <i data-lucide="target"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>Your Goal</h3>
+                    <div class="metric-value metric-value--text" id="goalValue">Muscle Gain</div>
+                    <p class="metric-note">Optimized nutrition</p>
+                </div>
+            </div>
+
+            <!-- Water Intake Card -->
+            <div class="metric-card">
+                <div class="metric-icon water-icon">
+                    <i data-lucide="droplets"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>Daily Water</h3>
+                    <div class="metric-value">
+                        <span id="waterValue">3000</span>
+                        <span class="metric-unit">ml</span>
+                    </div>
+                    <p class="metric-note">Stay hydrated</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Macronutrient Breakdown -->
+        <div class="macro-section">
+            <h2>Estimated Macronutrient Breakdown</h2>
+            <div class="macro-breakdown">
+                <div class="macro-item">
+                    <div class="macro-label">
+                        <span class="macro-name">Protein</span>
+                        <span class="macro-percentage" id="proteinPercent">25%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill protein-fill" style="width: 25%"></div>
+                    </div>
+                    <span class="macro-value" id="proteinGrams">0g</span>
+                </div>
+
+                <div class="macro-item">
+                    <div class="macro-label">
+                        <span class="macro-name">Carbs</span>
+                        <span class="macro-percentage" id="carbsPercent">45%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill carbs-fill" style="width: 45%"></div>
+                    </div>
+                    <span class="macro-value" id="carbsGrams">0g</span>
+                </div>
+
+                <div class="macro-item">
+                    <div class="macro-label">
+                        <span class="macro-name">Fats</span>
+                        <span class="macro-percentage" id="fatsPercent">30%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill fats-fill" style="width: 30%"></div>
+                    </div>
+                    <span class="macro-value" id="fatsGrams">0g</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Generated Diet Plan -->
+        <div class="diet-plan-section">
+            <h2>
+                <i data-lucide="brain" class="section-icon"></i>
+                Your AI-Generated Personalized Diet Plan
+                <span id="dietPlanBadge" class="diet-plan-badge" style="display:none;"></span>
+            </h2>
+            <div class="diet-plan-content" id="dietPlanContent">
+                <p class="loading-text">Loading your personalized diet plan...</p>
+            </div>
+        </div>
+
+        <div class="diet-habits-section">
+            <h2>
+                <i data-lucide="message-square" class="section-icon"></i>
+                Refine Plan With Your Food Habits
+            </h2>
+            <p class="diet-habits-help">Tell us your food preferences, dislikes, budget, timings, allergies, or veg/non-veg habits.</p>
+            <textarea id="foodHabitsInput" class="diet-habits-input" rows="4" placeholder="Example: I am vegetarian on weekdays, avoid peanuts, prefer South Indian breakfast, and need quick dinner recipes."></textarea>
+            <div class="diet-habits-actions">
+                <button id="refinePlanBtn" class="btn btn-primary" type="button">
+                    <i data-lucide="wand-2"></i>
+                    Update Plan With My Habits
+                </button>
+                <span id="refineStatus" class="refine-status"></span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button onclick="window.location.href='/'" class="btn btn-secondary">
+                <i data-lucide="arrow-left"></i>
+                Back Home
+            </button>
+            <button onclick="location.reload()" class="btn btn-primary">
+                <i data-lucide="refresh-cw"></i>
+                Recalculate
+            </button>
+        </div>
+
+        <!-- User Info Summary -->
+        <div class="info-summary">
+            <h3>Your Profile Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span class="summary-label">Age</span>
+                    <span class="summary-value" id="ageValue">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Gender</span>
+                    <span class="summary-value" id="genderValue">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Weight</span>
+                    <span class="summary-value" id="weightValue">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Height</span>
+                    <span class="summary-value" id="heightValue">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Experience</span>
+                    <span class="summary-value" id="experienceValue">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Workout Frequency</span>
+                    <span class="summary-value" id="frequencyValue">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Load results from session storage
+document.addEventListener('DOMContentLoaded', function() {
+    const predictions = JSON.parse(sessionStorage.getItem('predictions'));
+    
+    if (!predictions) {
+        window.location.href = '/';
+        return;
+    }
+
+    const calc = predictions.calculations;
+    const user = predictions.user_info;
+    const dietPlan = predictions.diet_plan;
+    window.currentPredictions = predictions;
+
+    // Update metric cards
+    document.getElementById('caloriesValue').textContent = Math.round(calc.calories);
+    document.getElementById('proteinValue').textContent = Math.round(calc.protein);
+    document.getElementById('bmiValue').textContent = calc.bmi;
+    document.getElementById('goalValue').textContent = calc.goal;
+    document.getElementById('waterValue').textContent = calc.water_intake;
+
+    // BMI Category
+    const bmi = calc.bmi;
+    let category = 'Normal Weight';
+    if (bmi < 18.5) category = 'Underweight';
+    else if (bmi < 25) category = 'Normal Weight';
+    else if (bmi < 30) category = 'Overweight';
+    else category = 'Obese';
+    document.getElementById('bmiCategory').textContent = category;
+
+    // Calculate macronutrients (using standard ratios)
+    const calories = calc.calories;
+    const proteinCals = calc.protein * 4;
+    const proteinPercent = Math.round((proteinCals / calories) * 100);
+    const carbsPercent = Math.round(45);
+    const fatsPercent = 100 - proteinPercent - carbsPercent;
+
+    const carbsGrams = Math.round((carbsPercent * calories) / 4);
+    const fatsGrams = Math.round((fatsPercent * calories) / 9);
+
+    document.getElementById('proteinPercent').textContent = proteinPercent + '%';
+    document.getElementById('carbsPercent').textContent = carbsPercent + '%';
+    document.getElementById('fatsPercent').textContent = fatsPercent + '%';
+
+    document.getElementById('proteinGrams').textContent = Math.round(calc.protein) + 'g';
+    document.getElementById('carbsGrams').textContent = carbsGrams + 'g';
+    document.getElementById('fatsGrams').textContent = fatsGrams + 'g';
+
+    // Update progress bars
+    document.querySelector('.protein-fill').style.width = proteinPercent + '%';
+    document.querySelector('.carbs-fill').style.width = carbsPercent + '%';
+    document.querySelector('.fats-fill').style.width = fatsPercent + '%';
+
+    // Update user info
+    document.getElementById('ageValue').textContent = user.age + ' years';
+    document.getElementById('genderValue').textContent = user.gender;
+    document.getElementById('weightValue').textContent = user.weight + ' kg';
+    document.getElementById('heightValue').textContent = user.height + ' cm';
+    document.getElementById('experienceValue').textContent = user.experience_level;
+    document.getElementById('frequencyValue').textContent = user.workout_frequency + ' days/week';
+
+    // Update diet plan
+    const dietContent = document.getElementById('dietPlanContent');
+    const badge = document.getElementById('dietPlanBadge');
+    if (predictions.diet_plan_source === 'gemini') {
+        badge.textContent = 'Powered by Gemini';
+        badge.style.display = 'inline-block';
+    } else if (predictions.diet_plan_source === 'fallback') {
+        badge.textContent = 'Offline plan';
+        badge.style.display = 'inline-block';
+    }
+    if (dietPlan) {
+        dietContent.textContent = dietPlan;
+        dietContent.style.whiteSpace = 'pre-wrap';
+        dietContent.style.fontFamily = "'Inter', sans-serif";
+        dietContent.style.lineHeight = '1.6';
+    } else {
+        dietContent.innerHTML = '<p>Unable to load diet plan. Please try again.</p>';
+    }
+
+    // Animate numbers on load
+    animateNumbers();
+    bindDietRefinement();
+});
+
+function buildRefinementProfile(predictions) {
+    const calc = predictions.calculations || {};
+    const user = predictions.user_info || {};
+    return {
+        age: user.age,
+        gender: user.gender,
+        weight: user.weight,
+        height: user.height,
+        experience_level: user.experience_level,
+        workout_frequency: user.workout_frequency,
+        session_duration: user.session_duration,
+        goal: calc.goal,
+        calories: calc.calories,
+        protein: calc.protein,
+        water_intake: (calc.water_intake || 2500) / 1000,
+        bmi: calc.bmi
+    };
+}
+
+function bindDietRefinement() {
+    const refineBtn = document.getElementById('refinePlanBtn');
+    const foodHabitsInput = document.getElementById('foodHabitsInput');
+    const statusEl = document.getElementById('refineStatus');
+    const dietContent = document.getElementById('dietPlanContent');
+    const badge = document.getElementById('dietPlanBadge');
+    if (!refineBtn || !foodHabitsInput || !statusEl || !dietContent || !badge) {
+        return;
+    }
+
+    refineBtn.addEventListener('click', async function () {
+        const foodHabits = foodHabitsInput.value.trim();
+        if (!foodHabits) {
+            statusEl.textContent = 'Please describe your food habits first.';
+            return;
+        }
+
+        const currentPlan = dietContent.textContent.trim();
+        if (!currentPlan) {
+            statusEl.textContent = 'Current diet plan is missing. Please recalculate once.';
+            return;
+        }
+
+        statusEl.textContent = 'Updating your diet plan...';
+        refineBtn.disabled = true;
+
+        try {
+            const response = await fetch('/refine-diet-plan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    food_habits: foodHabits,
+                    current_plan: currentPlan,
+                    profile: buildRefinementProfile(window.currentPredictions || {}),
+                }),
+            });
+
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || 'Failed to refine diet plan');
+            }
+
+            dietContent.textContent = result.diet_plan;
+            badge.textContent = result.diet_plan_source === 'gemini' ? 'Powered by Gemini' : 'Offline plan';
+            badge.style.display = 'inline-block';
+
+            if (window.currentPredictions) {
+                window.currentPredictions.diet_plan = result.diet_plan;
+                window.currentPredictions.diet_plan_source = result.diet_plan_source;
+                sessionStorage.setItem('predictions', JSON.stringify(window.currentPredictions));
+            }
+
+            statusEl.textContent = 'Plan updated based on your habits.';
+        } catch (error) {
+            statusEl.textContent = error.message || 'Unable to update plan right now.';
+        } finally {
+            refineBtn.disabled = false;
+        }
+    });
+}
+
+function animateNumbers() {
+    const elements = document.querySelectorAll('[id$="Value"]');
+    elements.forEach(el => {
+        const text = el.textContent;
+        const match = text.match(/[\d.]+/);
+        if (match) {
+            const num = parseFloat(match[0]);
+            const start = 0;
+            const duration = 1000;
+            const startTime = Date.now();
+
+            const animate = () => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const current = Math.floor(start + (num - start) * progress);
+                el.textContent = text.replace(/[\d.]+/, current);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            };
+            animate();
+        }
+    });
+}
+</script>
+
+{% endblock %}

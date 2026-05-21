@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block content %}
+  <section style="padding:32px 40px">
+    <div class="dashboard">
+      <div class="card">
+        <h4>Recommended Calories</h4>
+        <div class="big-number">{{ calories }} kcal</div>
+      </div>
+      <div class="card">
+        <h4>Recommended Protein</h4>
+        <div class="big-number">{{ protein }} g</div>
+      </div>
+      <div class="card">
+        <h4>BMI</h4>
+        <div class="big-number">{{ bmi }}</div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <h4>Diet Plan</h4>
+        <div class="diet-plan">{{ diet_plan }}</div>
+      </div>
+      <div class="card">
+        <h4>Daily Water Intake</h4>
+        <div class="big-number">{{ water_intake }} L</div>
+      </div>
+    </div>
+
+    <div style="padding:20px;display:flex;gap:12px">
+      <a href="/" class="cta">Back</a>
+      <a href="/" class="cta">Recalculate</a>
+    </div>
+  </section>
+{% endblock %}
