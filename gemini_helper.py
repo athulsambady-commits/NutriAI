@@ -1,62 +1,179 @@
 """
-Google Gemini AI diet plan generation.
-Uses the google-genai SDK when available, with legacy SDK fallback.
+Google Gemini AI Diet Planner
+Production-ready version for Flask + Render deployment.
 """
 
 import os
+import re
 import textwrap
 from typing import Any
-import re
 
 from dotenv import load_dotenv
 
-from config import Config
-
+# Load environment variables
 load_dotenv()
 
-# Preferred models (tried in order until one succeeds)
+
+# =========================================
+# CONFIG
+# =========================================
+
+class Config:
+
+    GEMINI_API_KEY = os.getenv(
+        "GEMINI_API_KEY"
+    )
+
+    GEMINI_MODEL = os.getenv(
+        "GEMINI_MODEL",
+        "gemini-1.5-flash"
+    )
+
+
+# =========================================
+# MODEL FALLBACKS
+# =========================================
+
 DEFAULT_MODEL_FALLBACKS = [
-    'gemini-2.0-flash',
-    'gemini-1.5-flash',
-    'gemini-1.5-flash-8b',
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-8b"
 ]
 
 
-class GeminiDietPlanner:
-    """Generates personalized diet plans via Google Gemini."""
+# =========================================
+# GEMINI DIET PLANNER
+# =========================================
 
-    def __init__(self, api_key: str | None = None):
-        self.api_key = api_key or Config.GEMINI_API_KEY or os.getenv('GEMINI_API_KEY')
-        self.enabled = bool(self.api_key)
-        self.model_names = [Config.GEMINI_MODEL, *DEFAULT_MODEL_FALLBACKS]
-        # Deduplicate while preserving order
+class GeminiDietPlanner:
+    """
+    Generates personalized diet plans
+    using Google Gemini AI.
+    """
+
+    def __init__(
+        self,
+        api_key: str | None = None
+    ):
+
+        self.api_key = (
+            api_key
+            or Config.GEMINI_API_KEY
+        )
+
+        self.enabled = bool(
+            self.api_key
+        )
+
+        self.model_names = [
+            Config.GEMINI_MODEL,
+            *DEFAULT_MODEL_FALLBACKS
+        ]
+
+        # Remove duplicates
         seen = set()
-        self.model_names = [m for m in self.model_names if m and not (m in seen or seen.add(m))]
+
+        self.model_names = [
+            m for m in self.model_names
+            if m and not (
+                m in seen
+                or seen.add(m)
+            )
+        ]
 
         self._genai_client = None
+
         self._legacy_configured = False
 
         if not self.enabled:
             return
 
+        # Try latest SDK
         try:
+
             from google import genai
 
-            self._genai_client = genai.Client(api_key=self.api_key)
-            self._sdk = 'genai'
+            self._genai_client = genai.Client(
+                api_key=self.api_key
+            )
+
+            self._sdk = "genai"
+
         except ImportError:
+
             self._init_legacy_sdk()
 
-    def _init_legacy_sdk(self) -> None:
+    # =====================================
+    # LEGACY SDK
+    # =====================================
+
+    def _init_legacy_sdk(self):
+
         try:
+
             import google.generativeai as genai_legacy
 
-            genai_legacy.configure(api_key=self.api_key)
+            genai_legacy.configure(
+                api_key=self.api_key
+            )
+
             self._legacy_genai = genai_legacy
+
             self._legacy_configured = True
-            self._sdk = 'legacy'
+
+            self._sdk = "legacy"
+
         except ImportError:
+
             self.enabled = False
+
+    # =====================================
+    # CLEAN AI RESPONSE
+    # =====================================
+
+    def _clean_response(
+        self,
+        text: str
+    ) -> str:
+
+        if not text:
+            return ""
+
+        text = text.replace(
+            "```",
+            ""
+        )
+
+        text = text.strip()
+
+        return text
+
+    # =====================================
+    # SAFE FLOAT CONVERTER
+    # =====================================
+
+    @staticmethod
+    def _safe_float(
+        value: Any,
+        default: float
+    ) -> float:
+
+        try:
+
+            if value is None:
+                return default
+
+            return float(value)
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            return default
+
+    # =====================================
+    # BUILD PROMPT
+    # =====================================
 
     def _build_prompt(
         self,
@@ -64,129 +181,271 @@ class GeminiDietPlanner:
         food_habits: str | None = None,
         existing_plan: str | None = None,
     ) -> str:
-        def _safe_float(value: Any, default: float) -> float:
-            try:
-                if value is None:
-                    return default
-                return float(value)
-            except (TypeError, ValueError):
-                return default
 
-        calories = _safe_float(profile.get('calories'), 2000)
-        protein = _safe_float(profile.get('protein'), 120)
-        goal = profile.get('goal', 'Maintenance')
-        workout_type = profile.get('workout_type', 'Mixed')
-        experience = profile.get('experience_level', 'Intermediate')
-        frequency = profile.get('workout_frequency', 3)
-        session_mins = profile.get('session_duration', 60)
-        water_l = _safe_float(profile.get('water_intake'), 2.5)
-        bmi = profile.get('bmi')
+        calories = self._safe_float(
+            profile.get("calories"),
+            2000
+        )
 
-        bmi_value = _safe_float(bmi, -1)
-        bmi_line = f"- BMI: {bmi_value:.1f}\n" if bmi_value >= 0 else ""
+        protein = self._safe_float(
+            profile.get("protein"),
+            120
+        )
 
+        goal = profile.get(
+            "goal",
+            "Maintenance"
+        )
+
+        workout_type = profile.get(
+            "workout_type",
+            "Mixed"
+        )
+
+        experience = profile.get(
+            "experience_level",
+            "Intermediate"
+        )
+
+        frequency = profile.get(
+            "workout_frequency",
+            3
+        )
+
+        session_mins = profile.get(
+            "session_duration",
+            60
+        )
+
+        water_l = self._safe_float(
+            profile.get("water_intake"),
+            2.5
+        )
+
+        bmi = profile.get("bmi")
+
+        bmi_value = self._safe_float(
+            bmi,
+            -1
+        )
+
+        bmi_line = ""
+
+        if bmi_value >= 0:
+
+            bmi_line = (
+                f"- BMI: {bmi_value:.1f}\n"
+            )
+
+        # Food habits block
         food_habits_block = ""
+
         if food_habits:
+
             food_habits_block = textwrap.dedent(f"""
-                FOOD HABITS / PREFERENCES FROM USER:
+                FOOD HABITS / PREFERENCES:
                 {food_habits}
             """).strip()
 
+        # Existing plan block
         existing_plan_block = ""
+
         if existing_plan:
+
             existing_plan_block = textwrap.dedent(f"""
-                CURRENT DIET PLAN TO IMPROVE:
+                CURRENT DIET PLAN:
                 {existing_plan}
             """).strip()
 
         extra_context = "\n\n".join(
-            block for block in [food_habits_block, existing_plan_block] if block
+            block for block in [
+                food_habits_block,
+                existing_plan_block
+            ]
+            if block
         )
 
         strict_rules = ""
+
         if food_habits:
+
             strict_rules = textwrap.dedent("""
-                STRICT COMPLIANCE RULES:
-                - Treat user food habits/restrictions as mandatory constraints.
-                - If user says vegetarian/veg, do NOT include chicken, fish, egg, meat, or seafood.
-                - If any user dislike/allergy is mentioned, never include those foods.
-                - If the current plan violates constraints, replace those items with compliant alternatives.
-                - Return only the corrected plan.
+                STRICT RULES:
+                - Follow food restrictions exactly.
+                - If vegetarian, never include meat/fish/chicken.
+                - Avoid disliked foods.
+                - Suggest practical alternatives.
             """).strip()
 
-        return textwrap.dedent(f"""
-            You are a professional gym nutritionist. Create a practical daily diet plan.
+        # Final Prompt
+        prompt = f"""
+You are an expert gym nutritionist and sports dietitian.
 
-            USER PROFILE:
-            - Age: {profile.get('age')} years
-            - Gender: {profile.get('gender')}
-            - Weight: {profile.get('weight')} kg
-            - Height: {profile.get('height')} cm
-            {bmi_line}- Fitness goal: {goal}
-            - Workout: {workout_type}, {frequency} days/week, {session_mins} min sessions
-            - Experience: {experience}
-            - Daily calorie target: {calories:.0f} kcal
-            - Daily protein target: {protein:.0f} g
-            - Water intake: {water_l} L/day
+Create a personalized Indian gym diet plan.
 
-            REQUIREMENTS:
-            1. Full day plan with meal timings (breakfast through dinner).
-            2. High-protein focus (at least {protein:.0f} g total).
-            3. Indian cuisine with Kerala-friendly options where relevant.
-            4. Affordable, easy-to-cook ingredients.
-            5. Pre-workout and post-workout meals.
-            6. Per-meal calories and macros (protein/carbs/fats).
-            7. Hydration schedule and a short shopping list.
-            8. Tailor portions and tips specifically for "{goal}".
-            9. Respect the user's food habits, likes/dislikes, schedule, and restrictions if provided.
+USER PROFILE:
+- Age: {profile.get('age')} years
+- Gender: {profile.get('gender')}
+- Weight: {profile.get('weight')} kg
+- Height: {profile.get('height')} cm
+{bmi_line}- Goal: {goal}
+- Workout Type: {workout_type}
+- Workout Frequency: {frequency} days/week
+- Session Duration: {session_mins} minutes
+- Experience Level: {experience}
+- Daily Calories Target: {calories:.0f} kcal
+- Daily Protein Target: {protein:.0f} grams
+- Daily Water Intake: {water_l} liters
 
-            {extra_context}
-            {strict_rules}
+REQUIREMENTS:
+1. Create a full-day meal plan.
+2. Include meal timings.
+3. Include:
+   - Breakfast
+   - Mid-morning snack
+   - Lunch
+   - Evening snack
+   - Pre-workout meal
+   - Post-workout meal
+   - Dinner
+4. Mention calories and protein for meals.
+5. Suggest affordable Indian foods.
+6. Include Kerala food options if suitable.
+7. High protein focus.
+8. Easy to cook meals.
+9. Add hydration schedule.
+10. Add workout nutrition tips.
+11. Add a short grocery shopping list.
+12. Tailor diet for the user's goal.
 
-            Format with clear headings and bullet points. Be concise but complete.
-        """).strip()
+{extra_context}
 
-    def _call_genai_sdk(self, prompt: str) -> str | None:
+{strict_rules}
+
+FORMAT RULES:
+- Use markdown headings.
+- Use bullet points.
+- Keep response clean and readable.
+- Be practical and concise.
+"""
+
+        return textwrap.dedent(
+            prompt
+        ).strip()
+
+    # =====================================
+    # NEW SDK CALL
+    # =====================================
+
+    def _call_genai_sdk(
+        self,
+        prompt: str
+    ) -> str | None:
+
         if not self._genai_client:
             return None
 
         last_error = None
+
         for model_name in self.model_names:
+
             try:
-                response = self._genai_client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
+
+                response = (
+                    self._genai_client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                    )
                 )
-                text = getattr(response, 'text', None)
+
+                text = getattr(
+                    response,
+                    "text",
+                    None
+                )
+
                 if text and text.strip():
+
                     return text.strip()
+
             except Exception as exc:
+
                 last_error = exc
-                print(f"[Gemini] Model {model_name} failed: {exc}")
+
+                print(
+                    f"[Gemini Error] "
+                    f"{model_name}: {str(exc)}"
+                )
 
         if last_error:
-            print(f"[Gemini] All models failed. Last error: {last_error}")
+
+            print(
+                f"[Gemini] All models failed: "
+                f"{last_error}"
+            )
+
         return None
 
-    def _call_legacy_sdk(self, prompt: str) -> str | None:
+    # =====================================
+    # LEGACY SDK CALL
+    # =====================================
+
+    def _call_legacy_sdk(
+        self,
+        prompt: str
+    ) -> str | None:
+
         if not self._legacy_configured:
             return None
 
         last_error = None
+
         for model_name in self.model_names:
+
             try:
-                model = self._legacy_genai.GenerativeModel(model_name)
-                response = model.generate_content(prompt)
-                text = getattr(response, 'text', None)
+
+                model = (
+                    self._legacy_genai.GenerativeModel(
+                        model_name
+                    )
+                )
+
+                response = model.generate_content(
+                    prompt
+                )
+
+                text = getattr(
+                    response,
+                    "text",
+                    None
+                )
+
                 if text and text.strip():
+
                     return text.strip()
+
             except Exception as exc:
+
                 last_error = exc
-                print(f"[Gemini legacy] Model {model_name} failed: {exc}")
+
+                print(
+                    f"[Legacy Gemini Error] "
+                    f"{model_name}: {str(exc)}"
+                )
 
         if last_error:
-            print(f"[Gemini legacy] All models failed. Last error: {last_error}")
+
+            print(
+                f"[Legacy Gemini] "
+                f"All models failed: "
+                f"{last_error}"
+            )
+
         return None
+
+    # =====================================
+    # MAIN GENERATOR
+    # =====================================
 
     def generate_diet_plan(
         self,
@@ -194,12 +453,7 @@ class GeminiDietPlanner:
         food_habits: str | None = None,
         existing_plan: str | None = None,
     ) -> dict[str, str]:
-        """
-        Generate a diet plan from a user profile dict.
 
-        Returns:
-            dict with keys: plan (str), source ('gemini' | 'fallback')
-        """
         prompt = self._build_prompt(
             profile=profile,
             food_habits=food_habits,
@@ -207,108 +461,173 @@ class GeminiDietPlanner:
         )
 
         if self.enabled:
+
             text = None
+
             if self._genai_client:
-                text = self._call_genai_sdk(prompt)
+
+                text = self._call_genai_sdk(
+                    prompt
+                )
+
             elif self._legacy_configured:
-                text = self._call_legacy_sdk(prompt)
+
+                text = self._call_legacy_sdk(
+                    prompt
+                )
 
             if text:
-                return {'plan': text, 'source': 'gemini'}
 
-        plan = self.get_default_diet_plan(profile, food_habits=food_habits)
-        return {'plan': plan, 'source': 'fallback'}
+                cleaned_text = (
+                    self._clean_response(text)
+                )
+
+                return {
+                    "plan": cleaned_text,
+                    "source": "gemini"
+                }
+
+        # Fallback plan
+        plan = self.get_default_diet_plan(
+            profile,
+            food_habits
+        )
+
+        return {
+            "plan": plan,
+            "source": "fallback"
+        }
+
+    # =====================================
+    # FALLBACK DIET PLAN
+    # =====================================
 
     @staticmethod
-    def get_default_diet_plan(profile: dict[str, Any], food_habits: str | None = None) -> str:
-        """Fallback plan when Gemini is unavailable or fails."""
-        def _safe_float(value: Any, default: float) -> float:
-            try:
-                if value is None:
-                    return default
-                return float(value)
-            except (TypeError, ValueError):
-                return default
+    def get_default_diet_plan(
+        profile: dict[str, Any],
+        food_habits: str | None = None
+    ) -> str:
 
-        calories = _safe_float(profile.get('calories'), 2000)
-        protein = _safe_float(profile.get('protein'), 120)
-        goal = profile.get('goal', 'Maintenance')
-        gender = profile.get('gender', 'Male')
-        water_l = _safe_float(profile.get('water_intake'), 2.5)
+        calories = 2000
+        protein = 120
 
-        habits = (food_habits or "").lower()
-        is_veg = bool(re.search(r"\b(veg|vegetarian|pure veg|no non[- ]?veg)\b", habits))
+        try:
+
+            calories = float(
+                profile.get(
+                    "calories",
+                    2000
+                )
+            )
+
+            protein = float(
+                profile.get(
+                    "protein",
+                    120
+                )
+            )
+
+        except Exception:
+            pass
+
+        goal = profile.get(
+            "goal",
+            "Maintenance"
+        )
+
+        habits = (
+            food_habits or ""
+        ).lower()
+
+        is_veg = bool(
+            re.search(
+                r"\b(veg|vegetarian|pure veg)\b",
+                habits
+            )
+        )
 
         if is_veg:
-            protein_lunch = "Paneer curry (150g) or soy chunks masala (100g) — ~260 kcal, 28g protein"
-            protein_dinner = "Paneer tikka/tofu stir-fry (150g) — ~230 kcal, 24g protein"
-            protein_breakfast = "Moong chilla or paneer bhurji — ~220 kcal, 18g protein"
-            shopping_protein = "paneer, tofu, soy chunks, eggs optional, dal, whey"
-            kerala_tip = "Kerala option: kadala curry, avial, and appam with paneer/tofu for training days."
+
+            protein_source = (
+                "paneer/tofu/soy chunks"
+            )
+
         else:
-            protein_lunch = "Grilled chicken/fish or paneer curry (150g) — ~220 kcal, 28g protein"
-            protein_dinner = "Grilled paneer or fish (150g) — ~230 kcal, 24g protein"
-            protein_breakfast = "2 boiled eggs or paneer bhurji — ~140 kcal, 12g protein"
-            shopping_protein = "chicken, fish, eggs, paneer, dal, whey"
-            kerala_tip = "Kerala option: fish curry (light oil), appam with egg on heavy training days."
 
-        return textwrap.dedent(f"""
-            PERSONALIZED NUTRITION PLAN (offline fallback)
-            Goal: {goal} | Target: {calories:.0f} kcal, {protein:.0f} g protein/day
+            protein_source = (
+                "chicken/fish/eggs/paneer"
+            )
 
-            BREAKFAST (7:00 AM)
-            - Vegetable upma or oats with milk (150g) — ~250 kcal, 10g protein
-            - {protein_breakfast}
-            - Green tea
+        return f"""
+# Personalized Diet Plan
 
-            MID-MORNING (10:00 AM)
-            - Protein shake (whey + milk) or Greek yogurt — ~200 kcal, 20g protein
-            - 1 banana — ~90 kcal
+## Goal
+{goal}
 
-            LUNCH (1:00 PM)
-            - Brown rice (150g cooked) — ~195 kcal, 4g protein
-            - {protein_lunch}
-            - Mixed salad — ~80 kcal
+## Daily Targets
+- Calories: {calories:.0f} kcal
+- Protein: {protein:.0f} g
 
-            PRE-WORKOUT (3:00 PM)
-            - Rice cakes with honey or 1 dosa — ~150 kcal
+## Breakfast
+- Oats with milk
+- Banana
+- {protein_source}
 
-            POST-WORKOUT (within 45 min)
-            - Protein shake + banana — ~250 kcal, 25g protein
+## Mid-Morning Snack
+- Protein shake
+- Dry fruits
 
-            DINNER (8:00 PM)
-            - 2 roti + dal (1 cup) + {protein_dinner} — ~460 kcal, 30g protein
-            - Cucumber raita — ~40 kcal
+## Lunch
+- Brown rice
+- Dal
+- Salad
+- {protein_source}
 
-            HYDRATION
-            - Target: {water_l} L/day (more on training days)
-            - 500 ml before workout, 250 ml every 15–20 min during, 500 ml after
+## Pre-Workout
+- Banana
+- Black coffee
 
-            NOTES FOR {goal.upper()}
-            - Hit protein at every meal; adjust rice/roti portions for {goal.lower()}.
-            - {kerala_tip}
-            - Meal prep 2–3 days ahead for consistency.
+## Post-Workout
+- Whey protein shake
+- Fruits
 
-            SHOPPING LIST
-            - Protein: {shopping_protein}
-            - Carbs: rice, oats, roti flour
-            - Produce: banana, spinach, cucumber, tomato
-            - Pantry: milk, yogurt, honey, olive oil
+## Dinner
+- Roti
+- Mixed vegetables
+- {protein_source}
 
-            Profile: {gender}, {profile.get('weight', 70)} kg — plan generated without live AI.
-        """).strip()
+## Water Intake
+- 3 to 4 liters daily
+
+## Tips
+- Maintain protein intake
+- Avoid junk food
+- Sleep 7-8 hours
+- Stay hydrated
+"""
+
+# =========================================
+# SINGLETON INSTANCE
+# =========================================
+
+_planner_instance = None
 
 
-_planner_instance: GeminiDietPlanner | None = None
+def get_diet_planner():
 
-
-def get_diet_planner() -> GeminiDietPlanner:
-    """Reuse a single planner instance across requests."""
     global _planner_instance
+
     if _planner_instance is None:
+
         _planner_instance = GeminiDietPlanner()
+
     return _planner_instance
 
 
-def create_diet_planner(api_key: str | None = None) -> GeminiDietPlanner:
-    return GeminiDietPlanner(api_key=api_key)
+def create_diet_planner(
+    api_key: str | None = None
+):
+
+    return GeminiDietPlanner(
+        api_key=api_key
+    )
